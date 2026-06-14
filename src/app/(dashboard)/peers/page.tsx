@@ -1,6 +1,7 @@
 "use client";
 
 import Breadcrumbs from "@components/Breadcrumbs";
+import { HelpTooltip } from "@components/HelpTooltip";
 import InlineLink from "@components/InlineLink";
 import Paragraph from "@components/Paragraph";
 import SkeletonTable from "@components/skeletons/SkeletonTable";
@@ -58,7 +59,38 @@ function PeersView() {
             active
           />
         </Breadcrumbs>
-        <h1 ref={headingRef}>Peers</h1>
+        <h1 ref={headingRef} className={"inline-flex items-center gap-2"}>
+          Peers
+          <HelpTooltip
+            side={"right"}
+            align={"center"}
+            iconSize={14}
+            className={"max-w-md space-y-3"}
+            triggerClassName={"top-0"}
+            content={
+              <>
+                <div>
+                  <div className={"font-medium text-nb-gray-100"}>
+                    User Devices
+                  </div>
+                  <div>
+                    Laptops, phones and other personal devices with a user
+                    behind them, typically added when the user signs in with
+                    SSO.
+                  </div>
+                </div>
+                <div>
+                  <div className={"font-medium text-nb-gray-100"}>Servers</div>
+                  <div>
+                    Servers, VMs, autonomous agents and other unattended
+                    machines with no user behind them, typically enrolled with a
+                    setup key.
+                  </div>
+                </div>
+              </>
+            }
+          />
+        </h1>
         <Paragraph>
           A list of all machines and devices connected to your private network.{" "}
           <InlineLink

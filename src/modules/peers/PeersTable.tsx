@@ -61,7 +61,7 @@ import PeerNameCell from "@/modules/peers/PeerNameCell";
 import { PeerOSCell } from "@/modules/peers/PeerOSCell";
 import PeerStatusCell from "@/modules/peers/PeerStatusCell";
 import PeerVersionCell from "@/modules/peers/PeerVersionCell";
-import { removeAllSpaces } from "@utils/helpers";
+import { cn, removeAllSpaces } from "@utils/helpers";
 
 // Stable key per OS family for the filter column. Mirrors the icon
 // selection in PeerOSCell so the chip label and the displayed OS icon
@@ -573,12 +573,17 @@ export default function PeersTable({
                   <ButtonGroup.Button
                     key={peerKind}
                     aria-pressed={enabledKinds[peerKind]}
+                    className={cn(
+                      enabledKinds[peerKind]
+                        ? "!bg-gray-100 !text-gray-900 dark:!bg-nb-gray-900/70 dark:!text-nb-gray-100 dark:!border-nb-gray-800 dark:hover:!bg-nb-gray-900"
+                        : "dark:!bg-nb-gray-920 dark:!text-nb-gray-500 dark:hover:!text-nb-gray-200",
+                    )}
                     disabled={peers?.length == 0}
                     onClick={() => {
                       table.setPageIndex(0);
                       toggleKind(peerKind);
                     }}
-                    variant={enabledKinds[peerKind] ? "tertiary" : "secondary"}
+                    variant={"secondary"}
                   >
                     {PEER_KIND_LABELS[peerKind]}
                   </ButtonGroup.Button>
