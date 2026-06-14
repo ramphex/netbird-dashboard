@@ -87,6 +87,13 @@ export default function Navigation({
                   visible={!isRestricted}
                 >
                   <SidebarItem
+                    label="All Peers"
+                    isChild
+                    href={"/peers"}
+                    exactPathMatch={true}
+                    visible={!isRestricted}
+                  />
+                  <SidebarItem
                     label="User Devices"
                     isChild
                     href={"/peers/users"}
