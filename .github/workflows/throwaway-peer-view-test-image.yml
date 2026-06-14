@@ -8,10 +8,10 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 env:
-  IMAGE_TAG: netbird-dashboard:peer-view-663-test
-  IMAGE_TAR: netbird-dashboard-peer-view-663-test.tar
+  IMAGE_TAG: ghcr.io/ramphex/netbird-dashboard:peer-view-663-test
 
 jobs:
   build-image:
@@ -62,30 +62,32 @@ jobs:
         env:
           NEXT_PUBLIC_DASHBOARD_VERSION: peer-view-663-test
 
-      - name: Build Docker image archive
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
         run: |
           set -euo pipefail
-          docker build -f docker/Dockerfile -t "$IMAGE_TAG" .
-          docker save "$IMAGE_TAG" -o "$IMAGE_TAR"
-          ls -lh "$IMAGE_TAR"
-
-      - name: Upload Docker image archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: netbird-dashboard-peer-view-663-test
-          path: ${{ env.IMAGE_TAR }}
-          if-no-files-found: error
-          retention-days: 7
+          docker build \
+            -f docker/Dockerfile \
+            -t "$IMAGE_TAG" \
+            -t "ghcr.io/ramphex/netbird-dashboard:peer-view-663-test-${GITHUB_SHA::7}" \
+            .
+          docker push "$IMAGE_TAG"
+          docker push "ghcr.io/ramphex/netbird-dashboard:peer-view-663-test-${GITHUB_SHA::7}"
 
       - name: Test instructions
         run: |
           {
             echo "## Test image"
             echo
-            echo "Artifact: netbird-dashboard-peer-view-663-test"
+            echo "Image: $IMAGE_TAG"
             echo
             echo '```sh'
-            echo "docker load -i $IMAGE_TAR"
             echo "docker run --rm -p 127.0.0.1:8080:80 $IMAGE_TAG"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
