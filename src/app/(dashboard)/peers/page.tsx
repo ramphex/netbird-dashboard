@@ -1,12 +1,12 @@
 "use client";
 
 import Breadcrumbs from "@components/Breadcrumbs";
-import { HelpTooltip } from "@components/HelpTooltip";
+import FullTooltip from "@components/FullTooltip";
 import InlineLink from "@components/InlineLink";
 import Paragraph from "@components/Paragraph";
 import SkeletonTable from "@components/skeletons/SkeletonTable";
 import { usePortalElement } from "@hooks/usePortalElement";
-import { ExternalLinkIcon } from "lucide-react";
+import { ExternalLinkIcon, InfoIcon } from "lucide-react";
 import React, { lazy, Suspense, useMemo } from "react";
 import PeerIcon from "@/assets/icons/PeerIcon";
 import PeersProvider, { usePeers } from "@/contexts/PeersProvider";
@@ -59,16 +59,14 @@ function PeersView() {
             active
           />
         </Breadcrumbs>
-        <h1 ref={headingRef} className={"inline-flex items-center gap-2"}>
+        <h1 ref={headingRef}>
           Peers
-          <HelpTooltip
+          <FullTooltip
             side={"right"}
             align={"center"}
-            iconSize={14}
-            className={"max-w-md space-y-3"}
-            triggerClassName={"top-0"}
+            className={"ml-2 align-middle"}
             content={
-              <>
+              <div className={"max-w-md space-y-3 text-xs leading-relaxed"}>
                 <div>
                   <div className={"font-medium text-nb-gray-100"}>
                     User Devices
@@ -87,9 +85,17 @@ function PeersView() {
                     setup key.
                   </div>
                 </div>
-              </>
+              </div>
             }
-          />
+          >
+            <span
+              className={
+                "inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full text-nb-gray-500 transition-colors hover:text-nb-gray-200"
+              }
+            >
+              <InfoIcon size={14} />
+            </span>
+          </FullTooltip>
         </h1>
         <Paragraph>
           A list of all machines and devices connected to your private network.{" "}
