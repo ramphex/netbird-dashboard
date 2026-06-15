@@ -61,6 +61,11 @@ import PeerNameCell from "@/modules/peers/PeerNameCell";
 import { PeerOSCell } from "@/modules/peers/PeerOSCell";
 import PeerStatusCell from "@/modules/peers/PeerStatusCell";
 import PeerVersionCell from "@/modules/peers/PeerVersionCell";
+import {
+  matchesPeerTableKind,
+  PEERS_TABLE_KIND_LABELS,
+  PeersTableKind,
+} from "@/modules/peers/peerKind";
 import { cn, removeAllSpaces } from "@utils/helpers";
 
 // Stable key per OS family for the filter column. Mirrors the icon
@@ -260,13 +265,6 @@ const PeersTableColumns: ColumnDef<Peer>[] = [
   },
 ];
 
-export type PeersTableKind = "users" | "servers";
-
-const PEER_KIND_LABELS: Record<PeersTableKind, string> = {
-  users: "Devices",
-  servers: "Servers",
-};
-
 const DEFAULT_ENABLED_KINDS: Record<PeersTableKind, boolean> = {
   users: true,
   servers: true,
@@ -278,15 +276,6 @@ type Props = {
   headingTarget?: HTMLHeadingElement | null;
   kind?: PeersTableKind;
   showKindFilters?: boolean;
-};
-
-// Peers split into two kinds:
-//   users   – owner is a real (non-service) user, typically added via SSO
-//   servers – no owner, or owner is a service user, typically enrolled via setup key
-const matchesKind = (peer: Peer, kind?: PeersTableKind) => {
-  if (!kind) return true;
-  const hasRealUser = !!peer.user && !peer.user.is_service_user;
-  return kind === "users" ? hasRealUser : !hasRealUser;
 };
 
 export default function PeersTable({
@@ -329,10 +318,12 @@ export default function PeersTable({
   const kindFilteredPeers = useMemo(
     () =>
       peers?.filter((peer) => {
-        if (kind) return matchesKind(peer, kind);
+        if (kind) return matchesPeerTableKind(peer, kind);
         if (!showKindFilters) return true;
 
-        const peerKind = matchesKind(peer, "users") ? "users" : "servers";
+        const peerKind = matchesPeerTableKind(peer, "users")
+          ? "users"
+          : "servers";
         return currentEnabledKinds[peerKind];
       }),
     [peers, kind, showKindFilters, currentEnabledKinds],
@@ -608,7 +599,7 @@ export default function PeersTable({
                     }}
                     variant={"secondary"}
                   >
-                    {PEER_KIND_LABELS[peerKind]}
+                    {PEERS_TABLE_KIND_LABELS[peerKind]}
                   </ButtonGroup.Button>
                 ))}
               </ButtonGroup>

@@ -17,6 +17,13 @@ import ModalHeader from "@components/modal/ModalHeader";
 import { notify } from "@components/Notification";
 import Paragraph from "@components/Paragraph";
 import { PeerGroupSelector } from "@components/PeerGroupSelector";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/Select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/Tabs";
 import FullScreenLoading from "@components/ui/FullScreenLoading";
 import LoginExpiredBadge from "@components/ui/LoginExpiredBadge";
@@ -73,6 +80,14 @@ import ReverseProxiesProvider, {
 import { ReverseProxyFlatTargetsTabContent } from "@/modules/reverse-proxy/targets/flat/ReverseProxyFlatTargetsTabContent";
 import { PeerEditIPModal } from "@/modules/peer/PeerEditIPModal";
 import { PeerSSHToggle } from "@/modules/peer/PeerSSHToggle";
+import {
+  inferPeerKind,
+  normalizePeerKind,
+  PEER_KIND_LABELS,
+  supportsPeerKind,
+  type PeerKind,
+  type ResolvedPeerKind,
+} from "@/modules/peers/peerKind";
 import { RDPButton } from "@/modules/remote-access/rdp/RDPButton";
 import { SSHButton } from "@/modules/remote-access/ssh/SSHButton";
 import { PeerExpirationSettings } from "@/modules/peer/PeerExpirationSettings";
@@ -471,6 +486,9 @@ function PeerInformationCard({ peer }: Readonly<{ peer: Peer }>) {
   const [showEditIPModal, setShowEditIPModal] = useState(false);
   const [showEditIPv6Modal, setShowEditIPv6Modal] = useState(false);
   const { permission } = usePermissions();
+  const hasPeerKind = supportsPeerKind(peer);
+  const selectedPeerKind = normalizePeerKind(peer.kind);
+  const inferredPeerKind = inferPeerKind(peer);
 
   const countryText = useMemo(() => {
     return getRegionByPeer(peer);
@@ -497,6 +515,22 @@ function PeerInformationCard({ peer }: Readonly<{ peer: Peer }>) {
         setShowEditIPv6Modal(false);
       }),
       loadingMessage: "Updating peer IPv6...",
+    });
+  };
+
+  const handleSavePeerKind = (kind: PeerKind) => {
+    if (!hasPeerKind || !permission.peers.update || kind === selectedPeerKind) {
+      return;
+    }
+
+    notify({
+      title: peer.name,
+      description: "Peer type was successfully updated",
+      promise: update({ kind }).then(() => {
+        mutate("/peers/" + peer.id);
+        mutate("/peers");
+      }),
+      loadingMessage: "Updating peer type...",
     });
   };
 
@@ -603,6 +637,32 @@ function PeerInformationCard({ peer }: Readonly<{ peer: Peer }>) {
             }
             value={peer.hostname}
           />
+
+          {hasPeerKind && (
+            <Card.ListItem
+              tooltip={false}
+              label={
+                <>
+                  <MonitorSmartphoneIcon size={16} className={"shrink-0"} />
+                  Peer Type
+                </>
+              }
+              value={
+                permission.peers.update ? (
+                  <PeerKindSelect
+                    value={selectedPeerKind}
+                    inferredKind={inferredPeerKind}
+                    onChange={handleSavePeerKind}
+                  />
+                ) : (
+                  <PeerKindValue
+                    value={selectedPeerKind}
+                    inferredKind={inferredPeerKind}
+                  />
+                )
+              }
+            />
+          )}
 
           <Card.ListItem
             label={
@@ -714,6 +774,63 @@ function PeerInformationCard({ peer }: Readonly<{ peer: Peer }>) {
         </Card.List>
       </Card>
     </>
+  );
+}
+
+function PeerKindValue({
+  value,
+  inferredKind,
+}: Readonly<{
+  value: PeerKind;
+  inferredKind: ResolvedPeerKind;
+}>) {
+  return (
+    <>
+      {PEER_KIND_LABELS[value]}
+      {value === "auto" && (
+        <span className={"text-nb-gray-300"}>
+          {" "}
+          ({PEER_KIND_LABELS[inferredKind]})
+        </span>
+      )}
+    </>
+  );
+}
+
+function PeerKindSelect({
+  value,
+  inferredKind,
+  onChange,
+}: Readonly<{
+  value: PeerKind;
+  inferredKind: ResolvedPeerKind;
+  onChange: (kind: PeerKind) => void;
+}>) {
+  return (
+    <Select value={value} onValueChange={(kind) => onChange(kind as PeerKind)}>
+      <SelectTrigger className={"h-9 min-w-[190px] text-left"}>
+        <div className={"flex items-center gap-1.5 whitespace-nowrap"}>
+          <SelectValue />
+          {value === "auto" && (
+            <span className={"text-nb-gray-300"}>
+              ({PEER_KIND_LABELS[inferredKind]})
+            </span>
+          )}
+        </div>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem
+          value={"auto"}
+          description={`Uses the current ${PEER_KIND_LABELS[
+            inferredKind
+          ].toLowerCase()} classification.`}
+        >
+          {PEER_KIND_LABELS.auto}
+        </SelectItem>
+        <SelectItem value={"device"}>{PEER_KIND_LABELS.device}</SelectItem>
+        <SelectItem value={"server"}>{PEER_KIND_LABELS.server}</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }
 
