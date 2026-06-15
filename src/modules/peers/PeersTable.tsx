@@ -87,7 +87,9 @@ function peerOsKey(os: string | undefined): string {
   }
 }
 
-const PeersTableColumns: ColumnDef<Peer>[] = [
+const getPeersTableColumns = (
+  showPeerKindIcons: boolean,
+): ColumnDef<Peer>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -119,7 +121,9 @@ const PeersTableColumns: ColumnDef<Peer>[] = [
       return <DataTableHeader column={column}>Name</DataTableHeader>;
     },
     sortingFn: "text",
-    cell: ({ row }) => <PeerNameCell peer={row.original} />,
+    cell: ({ row }) => (
+      <PeerNameCell peer={row.original} showPeerKindIcon={showPeerKindIcons} />
+    ),
   },
   {
     id: "approval_required",
@@ -364,6 +368,15 @@ export default function PeersTable({
         ? "Device "
         : ""
       : "";
+  const showPeerKindIcons =
+    showKindFilters &&
+    !kind &&
+    currentEnabledKinds.servers &&
+    currentEnabledKinds.users;
+  const peersTableColumns = useMemo(
+    () => getPeersTableColumns(showPeerKindIcons),
+    [showPeerKindIcons],
+  );
   const hasPeerKindFilterResult =
     showKindFilters &&
     !kind &&
@@ -523,7 +536,7 @@ export default function PeersTable({
         setSorting={setSorting}
         initialPageSize={25}
         showResetFilterButton={false}
-        columns={PeersTableColumns}
+        columns={peersTableColumns}
         data={showBrowserPeers ? browserPeers : regularPeers}
         searchPlaceholder={"Search by name, IP, owner or group..."}
         columnVisibility={{
