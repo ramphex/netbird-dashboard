@@ -267,6 +267,11 @@ const PEER_KIND_LABELS: Record<PeersTableKind, string> = {
   servers: "Servers",
 };
 
+const DEFAULT_ENABLED_KINDS: Record<PeersTableKind, boolean> = {
+  users: true,
+  servers: true,
+};
+
 type Props = {
   peers?: Peer[];
   isLoading: boolean;
@@ -309,12 +314,17 @@ export default function PeersTable({
       },
     ],
   );
-  const [enabledKinds, setEnabledKinds] = useState<
+  const [enabledKinds, setEnabledKinds] = useLocalStorage<
     Record<PeersTableKind, boolean>
-  >({
-    users: true,
-    servers: true,
-  });
+  >(
+    "netbird-peer-kind-filters",
+    DEFAULT_ENABLED_KINDS,
+    showKindFilters && !kind,
+  );
+  const currentEnabledKinds = useMemo(
+    () => ({ ...DEFAULT_ENABLED_KINDS, ...enabledKinds }),
+    [enabledKinds],
+  );
 
   const kindFilteredPeers = useMemo(
     () =>
@@ -323,9 +333,9 @@ export default function PeersTable({
         if (!showKindFilters) return true;
 
         const peerKind = matchesKind(peer, "users") ? "users" : "servers";
-        return enabledKinds[peerKind];
+        return currentEnabledKinds[peerKind];
       }),
-    [peers, kind, showKindFilters, enabledKinds],
+    [peers, kind, showKindFilters, currentEnabledKinds],
   );
 
   const pendingApprovalCount =
@@ -353,12 +363,13 @@ export default function PeersTable({
     return Array.from(map.values());
   }, [kindFilteredPeers]);
 
-  const selectedKindCount = Object.values(enabledKinds).filter(Boolean).length;
+  const selectedKindCount =
+    Object.values(currentEnabledKinds).filter(Boolean).length;
   const headingCountLabel =
     showKindFilters && !kind
-      ? enabledKinds.servers && !enabledKinds.users
+      ? currentEnabledKinds.servers && !currentEnabledKinds.users
         ? "Server "
-        : enabledKinds.users && !enabledKinds.servers
+        : currentEnabledKinds.users && !currentEnabledKinds.servers
         ? "Device "
         : ""
       : "";
@@ -380,10 +391,13 @@ export default function PeersTable({
   };
 
   const toggleKind = (peerKind: PeersTableKind) => {
-    setEnabledKinds((current) => ({
-      ...current,
-      [peerKind]: !current[peerKind],
-    }));
+    setEnabledKinds((current) => {
+      const normalized = { ...DEFAULT_ENABLED_KINDS, ...current };
+      return {
+        ...normalized,
+        [peerKind]: !normalized[peerKind],
+      };
+    });
     resetSelectedRows();
   };
 
@@ -581,9 +595,9 @@ export default function PeersTable({
                 {(["servers", "users"] as PeersTableKind[]).map((peerKind) => (
                   <ButtonGroup.Button
                     key={peerKind}
-                    aria-pressed={enabledKinds[peerKind]}
+                    aria-pressed={currentEnabledKinds[peerKind]}
                     className={cn(
-                      enabledKinds[peerKind]
+                      currentEnabledKinds[peerKind]
                         ? "!bg-gray-100 !text-gray-900 dark:!bg-nb-gray-900/70 dark:!text-nb-gray-100 dark:!border-nb-gray-800 dark:hover:!bg-nb-gray-900"
                         : "dark:!bg-nb-gray-920 dark:!text-nb-gray-500 dark:hover:!text-nb-gray-200",
                     )}
@@ -612,7 +626,7 @@ export default function PeersTable({
                 table.setPageIndex(0);
                 table.resetColumnFilters();
                 table.resetGlobalFilter();
-                setEnabledKinds({ users: true, servers: true });
+                setEnabledKinds(DEFAULT_ENABLED_KINDS);
                 resetSelectedRows();
               }}
             />
