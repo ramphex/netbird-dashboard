@@ -39,7 +39,11 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { trim, uniqBy } from "lodash";
-import { MonitorDotIcon } from "lucide-react";
+import {
+  MonitorDotIcon,
+  MonitorSmartphoneIcon,
+  ServerIcon,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSWRConfig } from "swr";
@@ -612,6 +616,21 @@ export default function PeersTable({
                     }}
                     variant={"secondary"}
                   >
+                    {peerKind === "servers" ? (
+                      <ServerIcon
+                        size={15}
+                        strokeWidth={1.8}
+                        className={"shrink-0"}
+                        aria-hidden={true}
+                      />
+                    ) : (
+                      <MonitorSmartphoneIcon
+                        size={15}
+                        strokeWidth={1.8}
+                        className={"shrink-0"}
+                        aria-hidden={true}
+                      />
+                    )}
                     {PEERS_TABLE_KIND_LABELS[peerKind]}
                   </ButtonGroup.Button>
                 ))}
