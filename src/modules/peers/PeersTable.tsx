@@ -354,6 +354,14 @@ export default function PeersTable({
   }, [kindFilteredPeers]);
 
   const selectedKindCount = Object.values(enabledKinds).filter(Boolean).length;
+  const headingCountLabel =
+    showKindFilters && !kind
+      ? enabledKinds.servers && !enabledKinds.users
+        ? "Server "
+        : enabledKinds.users && !enabledKinds.servers
+        ? "Device "
+        : ""
+      : "";
   const hasPeerKindFilterResult =
     showKindFilters &&
     !kind &&
@@ -501,6 +509,7 @@ export default function PeersTable({
       />
       <DataTable
         headingTarget={headingTarget}
+        headingCountLabel={headingCountLabel}
         rowSelection={selectedRows}
         setRowSelection={setSelectedRows}
         useRowId={true}

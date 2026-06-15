@@ -68,21 +68,19 @@ function PeersView() {
             content={
               <div className={"max-w-md space-y-3 text-xs leading-relaxed"}>
                 <div>
-                  <div className={"font-medium text-nb-gray-100"}>
-                    User Devices
-                  </div>
-                  <div>
-                    Laptops, phones and other personal devices with a user
-                    behind them, typically added when the user signs in with
-                    SSO.
-                  </div>
-                </div>
-                <div>
                   <div className={"font-medium text-nb-gray-100"}>Servers</div>
                   <div>
                     Servers, VMs, autonomous agents and other unattended
                     machines with no user behind them, typically enrolled with a
                     setup key.
+                  </div>
+                </div>
+                <div>
+                  <div className={"font-medium text-nb-gray-100"}>Devices</div>
+                  <div>
+                    Laptops, phones and other personal devices with a user
+                    behind them, typically added when the user signs in with
+                    SSO.
                   </div>
                 </div>
               </div>

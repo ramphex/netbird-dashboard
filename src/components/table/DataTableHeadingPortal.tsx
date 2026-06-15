@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 type Props<TData> = {
   table: Table<TData> | null;
   headingTarget?: HTMLHeadingElement | null;
+  countLabel?: string;
   totalRecords?: number;
   manualPagination?: boolean;
   hasActiveFilters?: boolean;
@@ -14,6 +15,7 @@ type Props<TData> = {
 export const DataTableHeadingPortal = function <TData>({
   table,
   headingTarget,
+  countLabel = "",
   totalRecords,
   manualPagination,
   hasActiveFilters,
@@ -84,6 +86,7 @@ export const DataTableHeadingPortal = function <TData>({
   return createPortal(
     <Heading
       hasAnyFilterActive={hasAnyFiltersActive}
+      countLabel={countLabel}
       totalItems={totalItems}
       filteredItems={filteredItems}
     />,
@@ -93,12 +96,14 @@ export const DataTableHeadingPortal = function <TData>({
 
 type HeadingProps = {
   hasAnyFilterActive: boolean | null;
+  countLabel: string;
   filteredItems?: number;
   totalItems?: number;
 };
 
 const Heading = ({
   hasAnyFilterActive,
+  countLabel,
   filteredItems,
   totalItems,
 }: HeadingProps) => {
@@ -106,9 +111,10 @@ const Heading = ({
     return (
       <>
         <span className={"text-netbird"}>{filteredItems}</span> of {totalItems}{" "}
+        {countLabel}
       </>
     );
   }
 
-  return `${totalItems} `;
+  return `${totalItems} ${countLabel}`;
 };
